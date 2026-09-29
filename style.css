@@ -1,0 +1,215 @@
+@import url('https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Russo+One&display=swap');
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; overflow: hidden; background: #000; font-family: 'Russo One', sans-serif; color: #fff; user-select: none; }
+#app canvas { display: block; }
+.hidden { display: none !important; }
+
+#blood-screen { position: fixed; inset: 0; pointer-events: none; opacity: 0; transition: opacity .15s;
+  background: radial-gradient(ellipse at center, transparent 35%, rgba(120,0,0,.55) 75%, rgba(60,0,0,.95) 100%); }
+#blood-canvas { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+
+#hud { position: fixed; inset: 0; pointer-events: none; }
+#crosshair { position: absolute; left: 50%; top: 50%; width: 0; height: 0; }
+#crosshair span { position: absolute; background: #fff; box-shadow: 0 0 2px #000; }
+#crosshair span:nth-child(1) { width: 2px; height: 8px; left: -1px; top: -18px; }
+#crosshair span:nth-child(2) { width: 2px; height: 8px; left: -1px; top: 10px; }
+#crosshair span:nth-child(3) { width: 8px; height: 2px; top: -1px; left: -18px; }
+#crosshair span:nth-child(4) { width: 8px; height: 2px; top: -1px; left: 10px; }
+#hitmarker { position: absolute; left: 50%; top: 50%; width: 24px; height: 24px; margin: -12px 0 0 -12px; opacity: 0;
+  background: linear-gradient(45deg, transparent 45%, #fff 45%, #fff 55%, transparent 55%), linear-gradient(-45deg, transparent 45%, #fff 45%, #fff 55%, transparent 55%);
+  -webkit-mask: radial-gradient(circle, transparent 5px, #000 6px); mask: radial-gradient(circle, transparent 5px, #000 6px); }
+#hitmarker.head { background: linear-gradient(45deg, transparent 45%, #ff3 45%, #ff3 55%, transparent 55%), linear-gradient(-45deg, transparent 45%, #ff3 45%, #ff3 55%, transparent 55%); }
+#hitmarker.kill { background: linear-gradient(45deg, transparent 42%, #f22 42%, #f22 58%, transparent 58%), linear-gradient(-45deg, transparent 42%, #f22 42%, #f22 58%, transparent 58%); }
+
+#topright { position: absolute; right: 16px; top: 16px; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+#minimap-wrap { width: 180px; height: 180px; border: 3px solid #fff; border-radius: 6px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,.5); }
+#stats { display: flex; gap: 8px; }
+#stats div { background: rgba(0,0,0,.45); padding: 4px 10px; border-radius: 4px; text-align: center; }
+#stats b { font-size: 20px; display: block; line-height: 1; }
+#stats small { font-size: 10px; opacity: .8; }
+#storm-info { background: rgba(80,20,140,.7); padding: 4px 10px; border-radius: 4px; font-size: 13px; }
+
+#killfeed { position: absolute; left: 16px; top: 16px; display: flex; flex-direction: column; gap: 4px; font-size: 13px; }
+#killfeed div { background: rgba(0,0,0,.5); padding: 4px 10px; border-radius: 4px; animation: fadeout 7s forwards; }
+#killfeed .you { color: #ffd84a; }
+#killfeed .how { color: #ff4a4a; }
+@keyframes fadeout { 0%,85% { opacity: 1 } 100% { opacity: 0 } }
+
+#center-msg { position: absolute; left: 0; right: 0; top: 22%; text-align: center; font-family: 'Luckiest Guy', cursive; font-size: 34px;
+  text-shadow: 0 3px 0 #000, 0 0 12px rgba(0,0,0,.7); letter-spacing: 1px; }
+#prompt { position: absolute; left: 50%; top: 62%; transform: translateX(-50%); background: rgba(0,0,0,.6); padding: 6px 14px; border-radius: 4px; font-size: 14px; display: none; }
+#prompt kbd, #buildbar kbd { background: #fff; color: #000; padding: 0 6px; border-radius: 3px; margin-right: 6px; font-family: inherit; }
+
+#bottomleft { position: absolute; left: 20px; bottom: 20px; width: 300px; display: flex; flex-direction: column; gap: 5px; }
+.bar { position: relative; height: 22px; background: rgba(0,0,0,.5); border: 2px solid rgba(255,255,255,.8); transform: skewX(-12deg); overflow: hidden; }
+.bar > div { height: 100%; transition: width .2s; }
+.bar span { position: absolute; left: 8px; top: 0; font-size: 15px; line-height: 18px; transform: skewX(12deg); text-shadow: 0 1px 2px #000; }
+.health > div { background: linear-gradient(#6f6, #1c1); }
+.shield > div { background: linear-gradient(#7cf, #18e); }
+
+#bottomright { position: absolute; right: 20px; bottom: 20px; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+#mats { background: rgba(0,0,0,.5); padding: 4px 10px; border-radius: 4px; display: flex; align-items: center; gap: 6px; }
+.wood-icon { width: 16px; height: 16px; background: linear-gradient(#c08040, #7a4a1c); border-radius: 3px; display: inline-block; }
+#ammo { font-size: 26px; text-shadow: 0 2px 0 #000; }
+#hotbar { display: flex; gap: 6px; }
+.slot { width: 64px; height: 64px; border: 3px solid rgba(255,255,255,.4); border-radius: 6px; background: rgba(0,0,0,.45); position: relative; display: flex; align-items: center; justify-content: center; font-size: 10px; text-align: center; }
+.slot.sel { border-color: #fff; transform: translateY(-6px); }
+.slot .n { position: absolute; left: 4px; top: 2px; font-size: 11px; opacity: .7; }
+.slot .nm { padding: 0 2px; }
+.r0 { background: linear-gradient(transparent 50%, rgba(160,160,160,.6)); }
+.r1 { background: linear-gradient(transparent 50%, rgba(60,200,60,.6)); }
+.r2 { background: linear-gradient(transparent 50%, rgba(60,130,255,.7)); }
+.r3 { background: linear-gradient(transparent 50%, rgba(180,70,255,.7)); }
+.r4 { background: linear-gradient(transparent 50%, rgba(255,160,20,.8)); }
+#buildbar { display: flex; gap: 6px; }
+#buildbar div { background: rgba(0,0,0,.5); padding: 8px 10px; border-radius: 4px; font-size: 12px; border: 2px solid transparent; }
+#buildbar div.sel { border-color: #6cf; }
+
+#menu, #end { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 30px;
+  background: radial-gradient(ellipse at center, rgba(40,20,90,.55), rgba(0,0,0,.85)); }
+.logo { text-align: center; font-family: 'Luckiest Guy', cursive; transform: rotate(-3deg); }
+.logo .ru { font-family: 'Russo One'; color: #d22; font-size: 20px; letter-spacing: 10px; }
+.logo .t1 { font-size: 44px; color: #fff; text-shadow: 0 4px 0 #b00, 0 8px 0 #300; }
+.logo .t2 { font-size: 110px; line-height: .9; background: linear-gradient(#fff36b, #ff9d00); -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 6px 0 #5a2a9a) drop-shadow(0 10px 8px rgba(0,0,0,.6)); }
+.logo .sub { font-family: 'Russo One'; font-size: 14px; color: #f66; margin-top: 10px; letter-spacing: 2px; }
+button { font-family: 'Luckiest Guy', cursive; font-size: 34px; padding: 12px 60px; border: none; border-radius: 8px; cursor: pointer;
+  background: linear-gradient(#ffe45c, #f7b500); color: #3a2200; box-shadow: 0 6px 0 #a06a00; transition: transform .1s; }
+button:hover { transform: scale(1.06); }
+button:active { transform: translateY(4px); box-shadow: 0 2px 0 #a06a00; }
+.keys { font-size: 12px; opacity: .7; text-align: center; line-height: 1.8; }
+#end-title { font-family: 'Luckiest Guy', cursive; font-size: 90px; text-shadow: 0 6px 0 #000; }
+#end-title.win { background: linear-gradient(#fff36b, #ff9d00); -webkit-background-clip: text; background-clip: text; color: transparent; }
+#end-title.lose { color: #e11; }
+#end-sub { font-size: 20px; }
+
+/* ---- v2 additions ---- */
+.logo .t1 { font-size: 54px; margin-top: -6px; color: #fff; text-shadow: 0 4px 0 #d52b1e, 0 8px 0 #0039a6, 0 12px 10px rgba(0,0,0,.6); }
+.logo .sticker { position: absolute; right: -70px; top: 30px; background: #ffe400; color: #d20000; font-family: 'Russo One'; font-size: 15px; padding: 6px 12px;
+  transform: rotate(18deg); border: 3px dashed #d20000; animation: pulse 0.9s infinite alternate; }
+.logo { position: relative; }
+@keyframes pulse { to { transform: rotate(18deg) scale(1.12); } }
+.modes { display: flex; gap: 22px; }
+.opt { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.opt .lbl { font-size: 11px; letter-spacing: 2px; opacity: .75; }
+.choices { display: flex; background: rgba(0,0,0,.45); border-radius: 6px; padding: 3px; gap: 3px; }
+.choices b { font-family: 'Luckiest Guy'; font-weight: normal; font-size: 18px; padding: 6px 14px; border-radius: 4px; cursor: pointer; color: #bbb; }
+.choices b.on { background: linear-gradient(#4aa8ff, #1a5ad0); color: #fff; box-shadow: 0 3px 0 #0a2a70; }
+.fine { font-size: 10px; opacity: .45; font-style: italic; }
+button.small { font-size: 20px; padding: 8px 30px; background: linear-gradient(#ddd, #999); box-shadow: 0 4px 0 #555; color: #222; }
+
+#scope { position: absolute; inset: 0; display: none; background: radial-gradient(circle at center, transparent 0, transparent 33vh, #000 33.3vh); }
+#scope .ring { position: absolute; left: 50%; top: 50%; width: 66.6vh; height: 66.6vh; transform: translate(-50%,-50%); border-radius: 50%; border: 3px solid #111;
+  background: linear-gradient(#000,#000) center/100% 1px no-repeat, linear-gradient(#000,#000) center/1px 100% no-repeat; }
+#tags { position: absolute; inset: 0; }
+.tag { position: absolute; transform: translate(-50%, -100%); font-size: 12px; white-space: nowrap; text-shadow: 0 1px 2px #000; }
+.tag .hb { height: 4px; width: 60px; background: rgba(0,0,0,.6); margin: 2px auto 0; }
+.tag .hb i { display: block; height: 100%; background: #5f5; }
+.tag.mate { color: #6cf; }
+.tag.mate::after { content: '▼'; display: block; text-align: center; font-size: 10px; }
+#team { position: absolute; left: 20px; bottom: 90px; display: flex; flex-direction: column; gap: 4px; }
+#team .m { background: rgba(0,0,0,.45); padding: 3px 8px; border-radius: 4px; font-size: 12px; width: 200px; }
+#team .m .b { height: 4px; background: rgba(255,255,255,.2); margin-top: 2px; } #team .m .b i { display: block; height: 100%; background: #5f5; }
+#team .m.dead { opacity: .45; text-decoration: line-through; }
+#lives { position: absolute; left: 50%; top: 14px; transform: translateX(-50%); font-size: 22px; letter-spacing: 4px; text-shadow: 0 2px 0 #000; }
+#respawn { position: absolute; left: 0; right: 0; top: 40%; text-align: center; font-family: 'Luckiest Guy'; font-size: 48px; color: #ffd84a; text-shadow: 0 4px 0 #000; }
+#crosshair { transition: transform .08s; }
+
+/* Touch play */
+#mobile-controls { display: none; }
+.touch-device #mobile-controls { position: absolute; inset: 0; z-index: 20; display: block; pointer-events: none; }
+.touch-device #app canvas { touch-action: none; }
+.touch-device #hotbar, .touch-device #buildbar { pointer-events: auto; }
+.touch-stick { position: absolute; left: max(18px, env(safe-area-inset-left)); bottom: calc(72px + env(safe-area-inset-bottom)); width: 116px; height: 116px; pointer-events: auto; touch-action: none; }
+.stick-ring, .stick-thumb { position: absolute; display: block; border-radius: 50%; }
+.stick-ring { inset: 0; border: 2px solid rgba(255,255,255,.4); background: rgba(0,0,0,.24); box-shadow: inset 0 0 18px rgba(0,0,0,.25); }
+.stick-thumb { left: 50%; top: 50%; width: 48px; height: 48px; margin: -24px; border: 2px solid rgba(255,255,255,.8); background: rgba(255,255,255,.28); box-shadow: 0 2px 8px rgba(0,0,0,.35); }
+.touch-actions { position: absolute; right: max(16px, env(safe-area-inset-right)); bottom: calc(82px + env(safe-area-inset-bottom)); width: 154px; height: 172px; pointer-events: none; }
+.touch-actions button { position: absolute; display: grid; place-items: center; padding: 0; border: 2px solid rgba(255,255,255,.72); border-radius: 50%; background: rgba(18,25,38,.72); color: #fff; box-shadow: 0 3px 0 rgba(0,0,0,.55); font: 14px 'Russo One', sans-serif; text-shadow: 0 1px 2px #000; pointer-events: auto; touch-action: none; -webkit-tap-highlight-color: transparent; }
+.touch-actions button:active, .touch-actions button.pressed { transform: scale(.93); background: rgba(63,105,154,.9); }
+.touch-actions [data-action="fire"] { right: 0; bottom: 0; width: 74px; height: 74px; background: rgba(178,39,30,.82); font-size: 15px; }
+.touch-actions [data-action="jump"] { right: 8px; bottom: 82px; width: 62px; height: 62px; }
+.touch-actions [data-action="aim"] { left: 2px; bottom: 0; width: 56px; height: 56px; }
+.touch-actions [data-action="use"] { left: 0; bottom: 82px; width: 58px; height: 58px; }
+.touch-actions [data-action="build"] { right: 76px; bottom: 38px; width: 52px; height: 52px; font-size: 11px; }
+
+.touch-device #topright { right: max(8px, env(safe-area-inset-right)); top: max(8px, env(safe-area-inset-top)); gap: 4px; }
+.touch-device #minimap-wrap { width: 92px; height: 92px; border-width: 2px; }
+.touch-device #minimap { width: 88px; height: 88px; }
+.touch-device #stats { gap: 4px; }
+.touch-device #stats div { padding: 3px 6px; }
+.touch-device #stats b { font-size: 16px; }
+.touch-device #stats small, .touch-device #storm-info { font-size: 9px; }
+.touch-device #storm-info { padding: 3px 6px; }
+.touch-device #killfeed { left: 8px; top: 8px; max-width: 40vw; font-size: 9px; }
+.touch-device #bottomleft { left: 10px; bottom: calc(12px + env(safe-area-inset-bottom)); width: 150px; gap: 3px; }
+.touch-device .bar { height: 17px; }
+.touch-device .bar span { font-size: 11px; line-height: 13px; }
+.touch-device #bottomright { right: 8px; bottom: calc(160px + env(safe-area-inset-bottom)); gap: 4px; }
+.touch-device #mats { padding: 3px 6px; font-size: 12px; }
+.touch-device #ammo { font-size: 17px; }
+.touch-device #hotbar { position: fixed; left: 50%; bottom: calc(8px + env(safe-area-inset-bottom)); transform: translateX(-50%); gap: 3px; }
+.touch-device .slot { width: 43px; height: 46px; border-width: 2px; border-radius: 5px; font-size: 8px; }
+.touch-device .slot.sel { transform: translateY(-3px); }
+.touch-device .slot .n { left: 3px; top: 1px; font-size: 9px; }
+.touch-device #buildbar { gap: 3px; }
+.touch-device #buildbar div { padding: 5px; font-size: 9px; }
+.touch-device #team { left: 8px; bottom: 56px; }
+.touch-device #team .m { width: 130px; font-size: 9px; }
+.touch-device #prompt { top: 66%; font-size: 11px; padding: 5px 9px; }
+.touch-device #center-msg { top: 20%; font-size: 24px !important; }
+.touch-device #respawn { font-size: 32px; }
+.touch-device #menu, .touch-device #end { gap: 14px; padding: 16px; }
+.touch-device .logo .ru { font-size: 12px; letter-spacing: 4px; }
+.touch-device .logo .t2 { font-size: clamp(54px, 15vw, 76px); }
+.touch-device .logo .t1 { font-size: clamp(30px, 8vw, 42px); }
+.touch-device .logo .sub { font-size: 10px; }
+.touch-device .logo .sticker, .touch-device .keys, .touch-device .fine { display: none; }
+.touch-device .modes { gap: 10px; flex-wrap: wrap; justify-content: center; }
+.touch-device .opt .lbl { font-size: 9px; }
+.touch-device .choices b { font-size: 14px; padding: 6px 9px; }
+.touch-device #play, .touch-device #again { font-size: 27px; padding: 10px 38px; }
+.touch-device #end-title { font-size: clamp(48px, 14vw, 70px); text-align: center; }
+.touch-device #end-sub { font-size: 15px; text-align: center; }
+
+@media (max-height: 480px) {
+  .touch-stick { width: 94px; height: 94px; bottom: calc(52px + env(safe-area-inset-bottom)); }
+  .stick-thumb { width: 40px; height: 40px; margin: -20px; }
+  .touch-actions { transform: scale(.82); transform-origin: bottom right; bottom: calc(58px + env(safe-area-inset-bottom)); }
+  .touch-device #bottomleft { bottom: calc(7px + env(safe-area-inset-bottom)); }
+  .touch-device #bottomright { bottom: calc(112px + env(safe-area-inset-bottom)); }
+  .touch-device #hotbar { bottom: calc(5px + env(safe-area-inset-bottom)); }
+  .touch-device #minimap-wrap { width: 72px; height: 72px; }
+  .touch-device #minimap { width: 68px; height: 68px; }
+  .touch-device #menu, .touch-device #end { gap: 8px; }
+  .touch-device .logo .t2 { font-size: 54px; }
+  .touch-device .logo .t1 { font-size: 30px; }
+}
+
+/* ---- v3: warning, bleed, radio, streak ---- */
+#warning { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; background: radial-gradient(ellipse at center, #3a0000, #000 75%); }
+.warn-box { max-width: 560px; margin: 20px; padding: 30px 34px; text-align: center; border: 3px solid #c00; border-radius: 10px; background: rgba(0,0,0,.7); box-shadow: 0 0 60px rgba(200,0,0,.45); }
+.warn-h { font-family: 'Luckiest Guy', cursive; font-size: 40px; color: #ff2a2a; line-height: 1; margin-bottom: 18px; text-shadow: 0 4px 0 #300; }
+.warn-h span { font-family: 'Russo One'; font-size: 16px; letter-spacing: 6px; color: #fff; }
+.warn-box p { font-size: 15px; line-height: 1.5; margin: 0 0 12px; color: #eee; }
+.warn-box p b { color: #f44; }
+.warn-box .ru-fine { font-size: 12px; opacity: .6; font-style: italic; }
+#warn-ok { margin-top: 10px; font-size: 26px; padding: 10px 34px; background: linear-gradient(#ff4a4a, #a00); color: #fff; box-shadow: 0 6px 0 #400; }
+#bleed-ind { font-size: 13px; color: #ff3030; text-shadow: 0 0 6px #000, 0 1px 0 #000; margin-bottom: 4px; animation: bleedp .6s infinite alternate; }
+@keyframes bleedp { from { opacity: .45; } to { opacity: 1; } }
+#radio { position: absolute; left: 50%; top: 70px; transform: translateX(-50%); font-size: 14px; color: #ffe27a; text-shadow: 0 1px 3px #000, 0 0 2px #000; text-align: center; max-width: 70vw; transition: opacity .4s; opacity: 0; pointer-events: none; }
+#radio.on { opacity: 1; }
+#streak { position: absolute; left: 50%; top: 30%; transform: translate(-50%, -50%) rotate(-4deg); font-family: 'Luckiest Guy', cursive; font-size: 56px; color: #ff2020; text-shadow: 0 4px 0 #300, 0 0 20px #000; pointer-events: none; opacity: 0; text-align: center; line-height: 1; }
+#streak small { display: block; font-family: 'Russo One'; font-size: 18px; color: #fff; }
+#streak.pop { animation: streakpop 1.8s ease-out; }
+@keyframes streakpop { 0% { opacity: 0; transform: translate(-50%,-50%) rotate(-4deg) scale(2.2); } 12% { opacity: 1; transform: translate(-50%,-50%) rotate(-4deg) scale(1); } 80% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%,-60%) rotate(-4deg) scale(.95); } }
+.touch-device .warn-h { font-size: 28px; }
+.touch-device .warn-box { padding: 18px; }
+.touch-device #opt-map .choices b { font-size: 13px; padding: 5px 8px; }
+
+#glory-banner { position: absolute; left: 50%; top: 18%; transform: translateX(-50%); pointer-events: none; opacity: 0; text-align: center; background: linear-gradient(#d52b1e, #8a1008); border: 4px solid #ffd84a; padding: 10px 28px; box-shadow: 0 6px 0 #000, 0 0 40px rgba(255,40,20,.6); }
+#glory-banner .gb-t { font-family: 'Luckiest Guy', cursive; font-size: 40px; color: #ffd84a; text-shadow: 0 3px 0 #400; white-space: nowrap; }
+#glory-banner .gb-s { font-family: 'Russo One', sans-serif; font-size: 18px; color: #fff; margin-top: 4px; }
+#glory-banner.pop { animation: gloryPop 3.2s ease-out; }
+@keyframes gloryPop { 0% { opacity: 0; transform: translateX(-50%) scale(2.5) rotate(-6deg); } 10% { opacity: 1; transform: translateX(-50%) scale(1) rotate(-2deg); } 85% { opacity: 1; } 100% { opacity: 0; transform: translateX(-50%) translateY(-20px); } }
+.touch-device #glory-banner .gb-t { font-size: 24px; }

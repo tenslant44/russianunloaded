@@ -1,0 +1,387 @@
+RUSSIAN ROYALE
+GAME DOCUMENTATION
+
+This guide describes the game as it is currently implemented in the project.
+
+
+1. GAME OVERVIEW
+
+Russian Royale is a single-player, third-person battle royale played against
+AI-controlled characters. The player drops from a flying battle bus, searches
+the map for weapons and supplies, fights other teams, and tries to be part of
+the last team left alive.
+
+The game has:
+- Solo, Duos, and Squads team sizes.
+- Classic and Reload match rules.
+- Four environments, with a random-map option.
+- Procedurally placed terrain details, houses, and loot.
+- Shooting, melee, destructible objects, and player-built cover.
+- Health, shields, injuries, bleeding, healing, and a shrinking storm.
+- Rideable polar bears on the Siberia map.
+- Stylized, graphic gore, ragdoll bodies, sound effects, and radio chatter.
+
+Duos and Squads are teams of bots around the player. The current project does
+not connect to online players or provide multiplayer networking.
+
+
+2. STARTING A MATCH
+
+Before a match, choose:
+
+TEAM
+- Solo: 25 total combatants (the player and 24 bots).
+- Duos: 26 total combatants, arranged in teams of two.
+- Squads: 24 total combatants, arranged in teams of four.
+
+MODE
+- Classic: one life per combatant.
+- Reload x3 Life: three lives per combatant. After a death, a living player
+  with a life remaining returns after five seconds.
+
+MAP
+- Island
+- Siberia
+- Pripyat
+- Baikonur Steppe
+- Random: selects one of the four maps for the match.
+
+The battle bus follows a randomly selected route across the map for about
+30 seconds. Press Space to jump when ready. If the player has not jumped by
+the end of the route, the game drops them automatically. Teammate bots follow
+the player's drop; other bots choose their own drop times and landing areas.
+
+At match start, the player has 100 health, no shield, 60 wood, and a pickaxe.
+The other four inventory slots are empty. Find weapons and supplies on the
+ground or inside houses. Each map gets 70 scattered ground-loot items, plus
+loot placed inside its houses.
+
+
+3. CONTROLS
+
+KEYBOARD AND MOUSE
+- W, A, S, D: move.
+- Mouse: look around while pointer lock is active.
+- Left mouse button: fire or use the selected item. Hold for automatic guns;
+  single-fire weapons fire once per click.
+- Right mouse button: aim with a gun. Aiming tightens weapon spread. Scoped
+  weapons zoom in and use the scope view.
+- Space: jump; jump from the battle bus while aboard.
+- Left Shift: sprint while moving forward. It also releases crouch.
+- C: toggle crouch. While in build mode, C selects a ramp instead.
+- R: reload the selected gun.
+- E: pick up nearby loot, mount a nearby polar bear, or dismount.
+- 1 through 5: select the matching inventory slot.
+- Mouse wheel: cycle through occupied inventory slots.
+- V: toggle first-person view. Scoped aiming also enters first-person view.
+- Q: toggle build mode.
+- Z: enter build mode and select a wall.
+- X: enter build mode and select a floor.
+- C while building: select a ramp.
+
+Click the game to capture the mouse if pointer lock is not active. The default
+view is third person.
+
+TOUCH CONTROLS
+- Drag the left virtual stick to move.
+- Drag on the game view to look around.
+- FIRE: fire or use the selected item.
+- AIM: aim with the selected gun.
+- JUMP: jump or jump from the battle bus.
+- USE: pick up loot, mount/dismount a bear, or reload when no nearby use action
+  is available.
+- BUILD: toggle build mode.
+- Tap a hotbar slot to select it. Tap a build-bar choice to select a structure.
+
+
+4. MATCH FLOW AND WINNING
+
+After landing, explore, gather loot, fight, and move toward the safe area.
+Direct attacks do not hurt living members of the same team. Bots search for
+loot, follow the player's team leader when appropriate, pursue opponents they
+can see, and can build defensive pieces when attacked.
+
+The HUD's ALIVE counter counts player and bot combatants that are alive or
+still have lives remaining. ELIMS shows the player's eliminations. The
+killfeed reports deaths. If the player is eliminated while a teammate is
+still alive, the player can spectate that teammate. The last team remaining
+wins.
+
+In Reload mode, a respawn takes five seconds and starts the combatant in the
+air with full health, no shield, a pickaxe, and a randomly selected basic gun
+(AR, SMG, or shotgun). Inventory is reset on respawn. Wood and kill counts
+are not reset by the respawn code.
+
+
+5. HEALTH, SHIELDS, DAMAGE, AND INJURIES
+
+Players have up to 100 health and 100 shield. The player starts with 100
+health and 0 shield. For ordinary damage, shield is consumed before health.
+Unabsorbed damage reaches health. Healing cannot raise either bar above 100.
+
+Hit locations change incoming damage:
+- Head: twice the normal damage.
+- Torso: normal damage.
+- Arms and legs: 85% of normal damage.
+
+Shotgun and Obrez pellets also lose damage with distance. Higher weapon
+rarity increases weapon damage. Moving, airborne firing, aiming, crouching,
+weapon spread, and recoil affect accuracy.
+
+Damage can create wounds and bleeding. Bleeding drains health over time and
+can be fatal. Bandages and medkits stop bleeding when their use completes.
+Repeated injuries can crack the skull, open the torso, break legs, or sever
+limbs. Missing or broken legs reduce movement speed; missing arms make gun
+spread worse. Hard falls can damage health, cause bleeding, and break legs.
+
+Deaths leave bodies that can continue to be hit or damaged by explosions.
+Explosions can hurt combatants, destroy structures and trees, and break up
+corpses.
+
+POLAR BEAR DAMAGE WHILE RIDING
+- Incoming damage is applied to the ridden bear's health first.
+- If an attack defeats the bear, only the remaining damage passes to the
+  rider.
+- The rider's shield absorbs that remaining damage before the rider's health.
+- The bear has 260 health and throws off its rider when it dies.
+- Explosions and storm damage count a mounted bear and rider as one damage
+  event, so the same area hit is not applied twice.
+
+
+6. THE STORM
+
+The storm begins after the battle bus finishes its route. It periodically
+shrinks toward a new safe circle. Combatants outside the current circle take
+storm damage about once per second; shields absorb storm damage before health.
+The minimap shows the current storm and the next circle.
+
+Storm schedule:
+Phase 1: wait 45 seconds, shrink for 35 seconds to radius 190; 1 damage/second.
+Phase 2: wait 35 seconds, shrink for 30 seconds to radius 110; 2 damage/second.
+Phase 3: wait 30 seconds, shrink for 25 seconds to radius 55; 5 damage/second.
+Phase 4: wait 25 seconds, shrink for 20 seconds to radius 22; 8 damage/second.
+Phase 5: wait 20 seconds, shrink for 20 seconds to radius 0; 10 damage/second.
+
+
+7. WEAPONS AND INVENTORY
+
+The inventory has five slots. Slot 1 starts with the pickaxe. When all slots
+are full, picking up an item replaces the currently selected item and drops
+the replaced item, unless the pickaxe slot is selected. Matching healing
+items stack together.
+
+Weapon stats below are base values before rarity and hit-location modifiers.
+Shotgun and Obrez damage is listed per pellet. Fire interval is the time
+between shots.
+
+PICKAXE
+- 22 damage; 0.42-second interval; melee.
+- Can hit combatants, trees, and structures.
+- A hit on a tree awards 10 wood. A hit on a wood structure awards 5 wood;
+  a hit on another structure awards 8 wood.
+
+KALASHNIKOV (AR)
+- 30 damage; 0.14-second interval; 30-round magazine; 2.2-second reload.
+- Range 300; automatic.
+
+BIZON SMG
+- 17 damage; 0.075-second interval; 30-round magazine; 2-second reload.
+- Range 120; automatic.
+
+PUMP SHOTGUN
+- 11 damage per pellet; 10 pellets; 0.95-second interval.
+- 5-round magazine; 4-second reload; range 45.
+
+DRAGUNOV
+- 105 damage; 1.3-second interval; 5-round magazine; 3-second reload.
+- Range 600; scoped zoom.
+
+MAKAROV
+- 24 damage; 0.2-second interval; 8-round magazine; 1.4-second reload.
+- Range 90.
+
+PKM MACHINE GUN (LMG)
+- 26 damage; 0.09-second interval; 100-round magazine; 5.5-second reload.
+- Range 280; automatic.
+
+OBREZ SAWED-OFF
+- 13 damage per pellet; 14 pellets; 0.35-second interval.
+- 2-round magazine; 2.4-second reload; range 28.
+
+RPG-7
+- 160 base damage; 1.2-second firing interval; one rocket before reloading.
+- 3.4-second reload; listed range 400.
+- Rockets travel forward and explode on impact. Explosions damage nearby
+  combatants, structures, and trees.
+
+Healing and shield items:
+
+SHIELD VODKA
+- Restores 50 shield over 2.2 seconds.
+- Starts with two uses per pickup.
+
+MEDKIT
+- Restores up to 100 health over 4 seconds and stops bleeding.
+- Starts with one use per pickup.
+
+BANDAGE
+- Restores 15 health over 1.6 seconds and stops bleeding.
+- Starts with five uses per pickup.
+
+BABUSHKA PELMENI
+- Restores 30 health and 10 shield over 2.6 seconds.
+- Starts with three uses per pickup.
+
+Taking non-storm damage interrupts an item in use. Storm damage does not
+interrupt the use timer. The item is consumed when its use timer completes.
+
+RARITY
+- Common: gray; base damage.
+- Uncommon: green; +7% weapon damage.
+- Rare: blue; +14% weapon damage.
+- Epic: purple; +21% weapon damage.
+- Legendary: orange; +28% weapon damage.
+
+Rarity is rolled when loot is created. Approximate roll chances from the
+current code are Common 38%, Uncommon 28%, Rare 20%, Epic 10%, Legendary 4%.
+
+
+8. BUILDING AND DESTRUCTIBLE OBJECTS
+
+The player begins with 60 wood. Enter build mode with Q, then choose a wall,
+floor, or ramp. Each piece costs 10 wood. Pieces snap to a four-unit grid.
+New wood pieces start with 40 health and build up to 150 health over time.
+Structures can block movement and shots and can be destroyed by weapons or
+explosions.
+
+Trees and rocks block movement. Trees can be destroyed; the pickaxe is the
+main way to gain wood from them. Houses are built from destructible floor,
+brick-wall, roof, and (in some houses) ramp pieces. Houses are placed around
+the map with a random door direction.
+
+
+9. POLAR BEARS
+
+Nine polar bears spawn on Siberia. The other map presets do not spawn bears.
+Wild bears wander and may become hostile to nearby combatants. When a bear is
+attacked, it can target the attacker. A bear attacks at close range with a
+claw maul.
+
+To ride one:
+1. Approach an unoccupied living bear.
+2. Press E or touch USE when the ride prompt appears.
+3. Steer with movement controls. Hold Shift to make the bear sprint; Space
+   makes it jump.
+4. Press E or USE again to dismount.
+
+While mounted, the player can still use weapons and items. The bear's health
+acts as the first layer of protection from incoming damage, followed by the
+rider's shield and health as described above.
+
+
+10. MAPS
+
+Terrain, lighting, sky, fog, vegetation, rocks, house positions, loot, and
+some set pieces are generated or positioned for each match. All maps use
+the same storm and core combat rules.
+
+ISLAND
+- Bright green island with a central mountain.
+- 420 trees, 90 rocks, and 16 houses.
+- No special landmark or polar bears.
+
+SIBERIA
+- Snowy tundra, pine trees, falling snow, and colder lighting.
+- 520 trees, 110 rocks, and 14 houses.
+- Contains a giant matryoshka landmark and nine rideable polar bears.
+
+PRIPYAT
+- Muted, overgrown environment with falling ash and an abandoned Ferris wheel.
+- 300 trees, 70 rocks, and 26 houses. Many houses have two floors.
+- Some trees appear dead. The ash is an environmental visual effect; storm
+  rules still provide the map's outside-circle damage.
+
+BAIKONUR STEPPE
+- Warm-colored, dry terrain with drifting dust and a Soyuz-style rocket
+  landmark.
+- 110 trees, 150 rocks, and 18 houses.
+
+
+11. BOTS AND TEAMS
+
+Bots choose loot, pick weapons based on their target's distance, reload,
+heal when safe, move toward the safe area, and engage opponents they can see.
+They strafe and sometimes jump while fighting. Bots can build a wall and
+sometimes a ramp after taking damage.
+
+In Duos and Squads, teammates share a team number and do not directly damage
+one another. Bots on the player's team can follow the player after the drop.
+Enemies get floating name and health tags when close; teammates can be tagged
+at greater distances when visible.
+
+
+12. HUD AND FEEDBACK
+
+The match HUD can show:
+- Minimap, player direction, battle-bus route, current storm, and next storm.
+- Number of remaining combatants, player eliminations, and killfeed.
+- Health, shield, bleeding warning, and damage numbers.
+- Selected inventory, ammunition, reload/use progress, and wood count.
+- Team health, player lives in Reload mode, interaction prompts, and storm
+  timer.
+- Radio Moscow messages, kill streak callouts, damage flash, and blood on the
+  screen.
+
+The player's camera starts in third person. V switches between third and
+first person. Scoped weapons enter the scope view while aiming.
+
+
+13. CONTENT AND AUDIO
+
+The game displays an 18+ warning. Its violence effects include visible
+wounds, blood sprays and pools, broken bones, severed limbs, exposed organs,
+head injuries, explosions, and ragdoll corpses.
+
+Audio includes gunfire, rocket and explosion sounds, melee impacts, building,
+flesh impacts, screams, crunches, and splats. Audio is initialized after the
+player presses Play. The sound files are stored in the project's sfx folder.
+
+
+14. PROJECT FILE GUIDE
+
+The project is a static browser game with no build step. index.html loads
+style.css and js/main.js. Three.js is imported from a CDN through the HTML
+import map; interface fonts are loaded from Google Fonts.
+
+MAIN GAME CODE
+- js/main.js: renderer setup, menu selections, match setup, game loop, storm,
+  respawns, teams, and match-end flow.
+- js/player.js: player controls, movement, camera, inventory interactions,
+  building, touch controls, and mounted movement.
+- js/combat.js: hit detection, weapons firing, explosions, health, shields,
+  deaths, corpses, and damage handling.
+- js/bots.js: AI movement, looting, aiming, combat, healing, and bot building.
+- js/bears.js: polar bear model, AI, maul attack, riding, and bear damage.
+- js/weapons.js: weapon/item statistics, rarity, item models, and floor loot.
+- js/maps.js: map presets and random map selection.
+- js/world.js: procedural terrain, trees, rocks, landmarks, and ambient
+  weather effects.
+- js/structures.js: build pieces, house generation, collisions, and structure
+  damage.
+- js/hud.js: minimap, status bars, messages, tags, damage numbers, and
+  end-of-match display.
+
+CHARACTERS, EFFECTS, AND SUPPORT
+- js/character.js: character models, animation, wounds, injuries, and outfit
+  definitions.
+- js/ragdoll.js: body physics after death.
+- js/gore.js: blood, body parts, particles, and corpse effects.
+- js/goretex.js: generated textures and materials for gore effects.
+- js/fx.js: tracers, muzzle flashes, explosions, puffs, and shield sparks.
+- js/audio.js: local sound loading and playback.
+- js/state.js: shared match state.
+- js/util.js: shared math, random, geometry, and material helpers.
+- sfx/: WAV sound assets used by the audio module.
+
+
+END OF DOCUMENT
